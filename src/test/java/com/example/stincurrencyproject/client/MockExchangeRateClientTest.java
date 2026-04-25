@@ -9,18 +9,18 @@ class MockExchangeRateClientTest {
 
     @Test
     void getCurrentRates_ReturnsMockJson() {
-        String result = client.getCurrentRates("EUR", "CZK,USD");
+        String result = client.getCurrentRates("USD", "GBP");
 
         assertNotNull(result, "Odpověď nesmí být null");
-        assertTrue(result.contains("\"base\": \"EUR\""), "Očekávaný JSON by měl obsahovat EUR");
-        assertTrue(result.contains("\"success\": true"), "JSON by měl indikovat úspěch");
+        assertTrue(result.contains("\"source\": \"USD\""), "Očekávaný JSON by měl obsahovat USD");
+        assertTrue(result.contains("\"quotes\": {"), "JSON by měl obsahovat quotes");
     }
 
     @Test
     void getHistoricRates_ReturnsMockJson() {
-        String result = client.getHistoricRates("EUR", "CZK,USD", "2025-01-01", "2025-01-02");
+        String result = client.getHistoricRates("USD", "GBP", "2020-01-01", "2020-01-03");
 
         assertNotNull(result, "Odpověď nesmí být null");
-        assertTrue(result.contains("\"timeseries\": true"), "JSON by měl obsahovat timeseries flag");
+        assertTrue(result.contains("\"timeframe\": true"), "JSON by měl obsahovat timeframe flag");
     }
 }

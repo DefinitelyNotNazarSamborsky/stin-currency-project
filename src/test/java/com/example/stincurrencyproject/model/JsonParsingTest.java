@@ -1,0 +1,39 @@
+package com.example.stincurrencyproject.model;
+
+import com.example.stincurrencyproject.client.MockExchangeRateClient;
+import tools.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class JsonParsingTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MockExchangeRateClient mockClient = new MockExchangeRateClient();
+
+    @Test
+    void parseCurrentRates_SuccessfullyMapsJsonToObject() throws Exception {
+        String json = mockClient.getCurrentRates("USD", "GBP");
+        CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
+
+        assertTrue(response.success());
+        assertEquals("USD", response.source());
+        assertNotNull(response.quotes());
+        assertEquals(0.7701, response.quotes().get("USDGBP"));
+    }
+
+    @Test
+    void parseHistoricRates_SuccessfullyMapsJsonToObject() throws Exception {
+        String json = mockClient.getHistoricRates("USD", "GBP,EUR", "2020-01-01", "2020-01-03");
+        HistoricRateResponse response = objectMapper.readValue(json, HistoricRateResponse.class);
+
+        assertTrue(response.success());
+        assertTrue(response.timeframe());
+        assertEquals("2020-01-01", response.startDate());
+        assertEquals("2020-01-03", response.endDate());
+
+        assertNotNull(response.rates().get("2020-01-01"));
+        assertEquals(0.7701, response.rates().get("2020-01-01").get("USDGBP"));
+        assertEquals(0.8119, response.rates().get("2020-01-02").get("USDEUR"));
+    }
+}
