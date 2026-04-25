@@ -1,11 +1,12 @@
 {
   "success": true,
-  "timestamp": 1700000000,
-  "base": "EUR",
-  "date": "2025-01-01",
-  "rates": {
-    "USD": 1.08,
-    "CZK": 24.5,
-    "GBP": 0.85
+  "terms": "https://exchangerate.host/terms",
+  "privacy": "https://exchangerate.host/privacy",
+  "timestamp": 1698739200,
+  "source": "USD",
+  "quotes": {
+    "USDAED": 3.672982,
+    "USDAFN": 57.8936,
+    "USDGBP": 0.7701
   }
 }

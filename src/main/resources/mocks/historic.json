@@ -1,17 +1,23 @@
 {
   "success": true,
-  "timeseries": true,
-  "base": "EUR",
-  "start_date": "2025-01-01",
-  "end_date": "2025-01-02",
+  "terms": "https://exchangerate.host/terms",
+  "privacy": "https://exchangerate.host/privacy",
+  "timeframe": true,
+  "start_date": "2020-01-01",
+  "end_date": "2020-01-03",
+  "source": "USD",
   "rates": {
-    "2025-01-01": {
-      "USD": 1.08,
-      "CZK": 24.5
+    "2020-01-01": {
+      "USDGBP": 0.7701,
+      "USDEUR": 0.8123
     },
-    "2025-01-02": {
-      "USD": 1.07,
-      "CZK": 24.4
+    "2020-01-02": {
+      "USDGBP": 0.772,
+      "USDEUR": 0.8119
+    },
+    "2020-01-03": {
+      "USDGBP": 0.7695,
+      "USDEUR": 0.8101
     }
   }
 }
