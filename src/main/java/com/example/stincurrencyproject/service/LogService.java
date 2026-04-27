@@ -16,14 +16,11 @@ public class LogService {
     private final String SETTINGS_FILE = "user_settings.json";
     private final String LOGS_FILE = "application_logs.json";
 
-    // Využití Dependency Injection k získání předkonfigurovaného mapperu ze Spring Bootu
     public LogService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * Uloží uživatelské nastavení do souboru.
-     */
+
     public void saveUserSettings(UserSettings settings) {
         try {
             objectMapper.writeValue(new File(SETTINGS_FILE), settings);
@@ -32,9 +29,7 @@ public class LogService {
         }
     }
 
-    /**
-     * Načte uživatelské nastavení ze souboru. Pokud neexistuje, vrátí výchozí.
-     */
+
     public UserSettings loadUserSettings() {
         File file = new File(SETTINGS_FILE);
         if (file.exists()) {
@@ -47,9 +42,6 @@ public class LogService {
         return new UserSettings(); // Vrací prázdné nastavení, pokud soubor chybí
     }
 
-    /**
-     * Přidá nový log do souboru s logy.
-     */
     public void saveLog(Logs logEntry) {
         List<Logs> currentLogs = loadLogs();
         currentLogs.add(logEntry);
@@ -60,9 +52,6 @@ public class LogService {
         }
     }
 
-    /**
-     * Načte všechny existující logy.
-     */
     public List<Logs> loadLogs() {
         File file = new File(LOGS_FILE);
         if (file.exists()) {

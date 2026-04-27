@@ -45,19 +45,14 @@ class CurrencyServiceTest {
     void calculateAverageRate_IgnoresMissingData() {
         Map<String, Map<String, Double>> historicRates = new HashMap<>();
 
-        // Den 1: Data jsou dostupná
         historicRates.put("2020-01-01", Map.of("USDGBP", 0.75, "USDCZK", 23.0));
-        // Den 2: USDGBP chybí (mělo by být ignorováno)
         historicRates.put("2020-01-02", Map.of("USDCZK", 23.5));
-        // Den 3: Data jsou dostupná
         historicRates.put("2020-01-03", Map.of("USDGBP", 0.85, "USDCZK", 24.0));
 
         Double avgGbp = currencyService.calculateAverageRate(historicRates, "USDGBP");
         Double avgCzk = currencyService.calculateAverageRate(historicRates, "USDCZK");
 
-        // GBP: (0.75 + 0.85) / 2 = 0.80
         assertEquals(0.80, avgGbp, 0.001);
-        // CZK: (23.0 + 23.5 + 24.0) / 3 = 23.5
         assertEquals(23.5, avgCzk, 0.001);
     }
 
