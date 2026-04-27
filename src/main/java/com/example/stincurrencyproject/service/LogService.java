@@ -2,6 +2,7 @@ package com.example.stincurrencyproject.service;
 
 import com.example.stincurrencyproject.model.Logs;
 import com.example.stincurrencyproject.model.UserSettings;
+import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class LogService {
 
@@ -24,8 +26,9 @@ public class LogService {
     public void saveUserSettings(UserSettings settings) {
         try {
             objectMapper.writeValue(new File(SETTINGS_FILE), settings);
+            log.info("Uživatelské nastavení bylo úspěšně uloženo.");
         } catch (RuntimeException e) {
-            System.err.println("Nepodařilo se uložit nastavení: " + e.getMessage());
+            log.error("Nepodařilo se uložit nastavení: {}", e.getMessage());
         }
     }
 
@@ -36,7 +39,7 @@ public class LogService {
             try {
                 return objectMapper.readValue(file, UserSettings.class);
             } catch (RuntimeException e) {
-                System.err.println("Nepodařilo se načíst nastavení: " + e.getMessage());
+                log.error("Nepodařilo se načíst nastavení: {}", e.getMessage());
             }
         }
         return new UserSettings(); // Vrací prázdné nastavení, pokud soubor chybí
@@ -48,7 +51,7 @@ public class LogService {
         try {
             objectMapper.writeValue(new File(LOGS_FILE), currentLogs);
         } catch (RuntimeException e) {
-            System.err.println("Nepodařilo se uložit log: " + e.getMessage());
+            log.error("Nepodařilo se uložit log: {}", e.getMessage());
         }
     }
 
@@ -58,7 +61,7 @@ public class LogService {
             try {
                 return objectMapper.readValue(file, objectMapper.getTypeFactory().constructCollectionType(List.class, Logs.class));
             } catch (RuntimeException e) {
-                System.err.println("Nepodařilo se načíst logy: " + e.getMessage());
+                log.error("Nepodařilo se načíst logy: {}", e.getMessage());
             }
         }
         return new ArrayList<>();

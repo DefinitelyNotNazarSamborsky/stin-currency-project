@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.example.stincurrencyproject.service.LogService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,10 +32,12 @@ class CurrencyControllerTest {
     @MockitoBean
     private CurrencyService currencyService;
 
+    @MockitoBean
+    private LogService logService;
+
     @Test
     @WithMockUser(username = "uzivatel")
     void getStrongestCurrency_WithAuth_ReturnsOk() throws Exception {
-        // Doplněno pole 'timestamp' aby parsování neselhalo s chybou 500
         String mockJson = "{\"success\":true,\"timestamp\":1698739200,\"source\":\"USD\",\"quotes\":{\"USDCZK\":24.5}}";
         when(exchangeRateClient.getCurrentRates("USD", "CZK")).thenReturn(mockJson);
         when(currencyService.findStrongestCurrency(any())).thenReturn("USDCZK");
