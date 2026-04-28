@@ -9,5 +9,4 @@ public class StinCurrencyProjectApplication {
     public static void main(String[] args) {
         SpringApplication.run(StinCurrencyProjectApplication.class, args);
     }
-
 }
