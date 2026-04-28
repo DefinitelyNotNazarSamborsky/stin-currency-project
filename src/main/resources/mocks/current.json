@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "terms": "https://exchangerate.host/terms",
+  "privacy": "https://exchangerate.host/privacy",
+  "timestamp": 1698739200,
+  "source": "USD",
+  "quotes": {
+    "USDAED": 3.672982,
+    "USDAFN": 57.8936,
+    "USDGBP": 0.7701
+  }
+}
