@@ -5,8 +5,8 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CurrentRateResponse(
-        boolean success,
-        long timestamp,
+        Boolean success,
+        Long timestamp,
         String source,
         Map<String, Double> quotes
 ) {}
