@@ -83,7 +83,7 @@ public class CurrencyController {
             String json = exchangeRateClient.getHistoricRates(base, symbols, startDate, endDate);
             HistoricRateResponse response = objectMapper.readValue(json, HistoricRateResponse.class);
 
-            Double average = currencyService.calculateAverageRate(response.rates(), targetCurrency);
+            Double average = currencyService.calculateAverageRate(response.rates(), base + targetCurrency);
             return ResponseEntity.ok(average);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Od: %s, Do: %s, Target: %s, Detail: %s",
