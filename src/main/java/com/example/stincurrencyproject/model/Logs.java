@@ -6,6 +6,6 @@ import java.time.LocalDateTime;
 @Data
 public class Logs {
     private LocalDateTime timestamp;
-    private int level;
+    private Integer level;
     private String message;
 }

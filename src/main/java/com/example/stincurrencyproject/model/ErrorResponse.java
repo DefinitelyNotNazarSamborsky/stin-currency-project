@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ErrorResponse(
-        boolean success,
+        Boolean success,
         ErrorDetail error
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ErrorDetail(
-            int code,
+            Integer code,
             String info
     ) {}
 }

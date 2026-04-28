@@ -6,8 +6,8 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record HistoricRateResponse(
-        boolean success,
-        boolean timeframe,
+        Boolean success,
+        Boolean timeframe,
         String source,
         @JsonProperty("start_date") String startDate,
         @JsonProperty("end_date") String endDate,
