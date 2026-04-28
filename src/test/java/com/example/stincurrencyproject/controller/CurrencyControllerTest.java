@@ -76,7 +76,7 @@ class CurrencyControllerTest {
                         .param("symbols", "CZK")
                         .param("startDate", "2020-01-01")
                         .param("endDate", "2020-01-03")
-                        .param("targetCurrency", "USDCZK"))
+                        .param("targetCurrency", "CZK"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("24.0"));
     }
