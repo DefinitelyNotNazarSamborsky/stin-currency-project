@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Service
-@Profile("dev")
+@Profile({"dev", "default"})
 public class MockExchangeRateClient implements ExchangeRateClient {
 
     @Override

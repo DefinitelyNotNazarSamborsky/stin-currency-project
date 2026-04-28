@@ -39,10 +39,11 @@ public class CurrencyController {
             String strongest = currencyService.findStrongestCurrency(response.quotes());
             return ResponseEntity.ok(strongest);
         } catch (Exception e) {
-            log.error("API Error - Strongest: {}", e.getMessage());
+            String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
+            log.error("API Error - Strongest | {}", errorDetail);
 
             Logs errorLog = new Logs();
-            errorLog.setMessage("Chyba API/Aplikace při zjišťování nejsilnější měny: " + e.getMessage());
+            errorLog.setMessage("Chyba zjišťování nejsilnější měny | " + errorDetail);
             errorLog.setLevel(1);
             errorLog.setTimestamp(LocalDateTime.now());
             logService.saveLog(errorLog);
@@ -59,9 +60,11 @@ public class CurrencyController {
             String weakest = currencyService.findWeakestCurrency(response.quotes());
             return ResponseEntity.ok(weakest);
         } catch (Exception e) {
-            log.error("API Error - Weakest: {}", e.getMessage());
+            String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
+            log.error("API Error - Weakest | {}", errorDetail);
+
             Logs errorLog = new Logs();
-            errorLog.setMessage("Chyba API/Aplikace při zjišťování nejslabší měny: " + e.getMessage());
+            errorLog.setMessage("Chyba zjišťování nejslabší měny | " + errorDetail);
             errorLog.setLevel(1);
             errorLog.setTimestamp(LocalDateTime.now());
             logService.saveLog(errorLog);
@@ -83,9 +86,12 @@ public class CurrencyController {
             Double average = currencyService.calculateAverageRate(response.rates(), targetCurrency);
             return ResponseEntity.ok(average);
         } catch (Exception e) {
-            log.error("API Error - Average: {}", e.getMessage());
+            String errorDetail = String.format("Base: %s, Symbols: %s, Od: %s, Do: %s, Target: %s, Detail: %s",
+                    base, symbols, startDate, endDate, targetCurrency, e.getMessage());
+            log.error("API Error - Average | {}", errorDetail);
+
             Logs errorLog = new Logs();
-            errorLog.setMessage("Chyba API/Aplikace při výpočtu průměru: " + e.getMessage());
+            errorLog.setMessage("Chyba výpočtu průměru | " + errorDetail);
             errorLog.setLevel(1);
             errorLog.setTimestamp(LocalDateTime.now());
             logService.saveLog(errorLog);
