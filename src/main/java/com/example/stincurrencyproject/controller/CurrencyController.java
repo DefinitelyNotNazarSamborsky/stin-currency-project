@@ -36,7 +36,7 @@ public class CurrencyController {
             String json = exchangeRateClient.getCurrentRates(base, symbols);
             CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
 
-            String strongest = currencyService.findStrongestCurrency(response.quotes());
+            String strongest = currencyService.findStrongestCurrency(response.getQuotes());
             return ResponseEntity.ok(strongest);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
@@ -57,7 +57,7 @@ public class CurrencyController {
             String json = exchangeRateClient.getCurrentRates(base, symbols);
             CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
 
-            String weakest = currencyService.findWeakestCurrency(response.quotes());
+            String weakest = currencyService.findWeakestCurrency(response.getQuotes());
             return ResponseEntity.ok(weakest);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
@@ -81,9 +81,10 @@ public class CurrencyController {
             @RequestParam String targetCurrency) {
         try {
             String json = exchangeRateClient.getHistoricRates(base, symbols, startDate, endDate);
+            log.info("Historic rates JSON: {}", json); // přidej toto
             HistoricRateResponse response = objectMapper.readValue(json, HistoricRateResponse.class);
-
-            Double average = currencyService.calculateAverageRate(response.rates(), base + targetCurrency);
+            log.info("Parsed rates keys: {}", response.getQuotes());
+            Double average = currencyService.calculateAverageRate(response.getQuotes(), base + targetCurrency);
             return ResponseEntity.ok(average);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Od: %s, Do: %s, Target: %s, Detail: %s",
