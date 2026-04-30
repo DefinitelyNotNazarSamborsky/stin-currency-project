@@ -1,15 +1,18 @@
 package com.example.stincurrencyproject.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ErrorResponse(
-        Boolean success,
-        ErrorDetail error
-) {
+public class ErrorResponse {
+
+    private Boolean success;
+    private ErrorDetail error;
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ErrorDetail(
-            Integer code,
-            String info
-    ) {}
+    public static class ErrorDetail {
+        private Integer code;
+        private String info;
+    }
 }

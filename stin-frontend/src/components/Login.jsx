@@ -22,17 +22,13 @@ export default function Login() {
         const encodedToken = btoa(`${username}:${password}`);
 
         try {
-            // Zeptáme se backendu (jestli heslo platí)
             await apiClient.get('/api/currencies/strongest?base=USD&symbols=CZK', {
                 headers: {
                     'Authorization': `Basic ${encodedToken}`
                 }
             });
-
-            // 1. Uložíme token
             localStorage.setItem('authToken', encodedToken);
 
-            // 2. Dáme Reactu 100 milisekund čas, aby si to uvědomil, a pak ho přesměrujeme
             setTimeout(() => {
                 navigate('/dashboard', { replace: true });
             }, 100);
@@ -50,7 +46,6 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-zinc-950 font-sans text-zinc-100">
-            {/* Přepínač jazyků */}
             <div className="absolute top-6 right-6 flex gap-4">
                 <button
                     className={`text-sm font-bold transition-colors ${i18n.language === 'cs' ? 'text-rose-500' : 'text-zinc-500 hover:text-zinc-300'}`}
@@ -60,7 +55,6 @@ export default function Login() {
                     onClick={() => changeLanguage('en')}>EN</button>
             </div>
 
-            {/* Přihlašovací karta */}
             <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-8">
                 <h1 className="text-3xl font-extrabold text-center mb-8 tracking-tight text-white">
                     {t('login.title')}

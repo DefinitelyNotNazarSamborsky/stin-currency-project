@@ -1,12 +1,14 @@
 package com.example.stincurrencyproject.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.Map;
+import lombok.Data;
 
+import java.util.Map;
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CurrentRateResponse(
-        Boolean success,
-        Long timestamp,
-        String source,
-        Map<String, Double> quotes
-) {}
+public class CurrentRateResponse {
+    private Boolean success;
+    private Long timestamp;
+    private String source;
+    private Map<String, Double> quotes;
+}

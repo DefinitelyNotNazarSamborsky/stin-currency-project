@@ -26,7 +26,7 @@
     "fetching": "Získávám data z burzy..."
   },
   "login": {
-    "title": "Přihlášení",
+    "title": "Currency Analyser",
     "username": "Uživatelské jméno",
     "password": "Heslo",
     "submit": "Přihlásit se",
