@@ -26,7 +26,7 @@
     "fetching": "Fetching data from exchange..."
   },
   "login": {
-    "title": "Login",
+    "title": "Currency Analyser",
     "username": "Username",
     "password": "Password",
     "submit": "Sign In",

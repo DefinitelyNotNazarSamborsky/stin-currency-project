@@ -42,7 +42,7 @@ public class LogService {
                 log.error("Nepodařilo se načíst nastavení: {}", e.getMessage());
             }
         }
-        return new UserSettings(); // Vrací prázdné nastavení, pokud soubor chybí
+        return new UserSettings();
     }
 
     public void saveLog(Logs logEntry) {
