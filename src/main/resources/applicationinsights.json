@@ -1,0 +1,10 @@
+{
+  "instrumentation": {
+    "logging": {
+      "level": "OFF"
+    }
+  },
+  "preview": {
+    "disableLocalAuth": false
+  }
+}
