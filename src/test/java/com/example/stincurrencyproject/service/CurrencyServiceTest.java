@@ -26,7 +26,7 @@ class CurrencyServiceTest {
         );
 
         String strongest = currencyService.findStrongestCurrency(quotes);
-        assertEquals("CZK", strongest);
+        assertEquals("USDCZK", strongest);
     }
 
     @Test
@@ -38,7 +38,7 @@ class CurrencyServiceTest {
         );
 
         String weakest = currencyService.findWeakestCurrency(quotes);
-        assertEquals("GBP", weakest);
+        assertEquals("USDGBP", weakest);
     }
 
     @Test

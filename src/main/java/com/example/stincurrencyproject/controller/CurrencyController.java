@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -37,7 +36,7 @@ public class CurrencyController {
             String json = exchangeRateClient.getCurrentRates(base, symbols);
             CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
 
-            String strongest = currencyService.findStrongestCurrency(response.quotes());
+            String strongest = currencyService.findStrongestCurrency(response.getQuotes());
             return ResponseEntity.ok(strongest);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
@@ -58,7 +57,7 @@ public class CurrencyController {
             String json = exchangeRateClient.getCurrentRates(base, symbols);
             CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
 
-            String weakest = currencyService.findWeakestCurrency(response.quotes());
+            String weakest = currencyService.findWeakestCurrency(response.getQuotes());
             return ResponseEntity.ok(weakest);
         } catch (Exception e) {
             String errorDetail = String.format("Base: %s, Symbols: %s, Detail: %s", base, symbols, e.getMessage());
@@ -82,7 +81,7 @@ public class CurrencyController {
             @RequestParam String targetCurrency) {
         try {
             String json = exchangeRateClient.getHistoricRates(base, symbols, startDate, endDate);
-            log.info("Historic rates JSON: {}", json);
+            log.info("Historic rates JSON: {}", json); // přidej toto
             HistoricRateResponse response = objectMapper.readValue(json, HistoricRateResponse.class);
             log.info("Parsed rates keys: {}", response.getQuotes());
             Double average = currencyService.calculateAverageRate(response.getQuotes(), base + targetCurrency);
@@ -97,36 +96,6 @@ public class CurrencyController {
             errorLog.setLevel(1);
             errorLog.setTimestamp(LocalDateTime.now());
             logService.saveLog(errorLog);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/history")
-    public ResponseEntity<List<Map<String, Object>>> getHistoryData(
-            @RequestParam String base,
-            @RequestParam String symbols,
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
-        try {
-            String json = exchangeRateClient.getHistoricRates(base, symbols, startDate, endDate);
-            HistoricRateResponse response = objectMapper.readValue(json, HistoricRateResponse.class);
-
-            List<Map<String, Object>> result = response.getQuotes().entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(entry -> {
-                        Map<String, Object> point = new java.util.LinkedHashMap<>();
-                        point.put("date", entry.getKey());
-                        entry.getValue().forEach((currency, value) -> {
-                            String shortName = currency.replace(base, "");
-                            point.put(shortName, value);
-                        });
-                        return point;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
-            log.info("History chart result: {}", result);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            log.error("API Error - History | {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

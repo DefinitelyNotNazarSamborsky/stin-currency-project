@@ -13,6 +13,5 @@ public class HistoricRateResponse{
         private String source;
         @JsonProperty("start_date") private String startDate;
         @JsonProperty("end_date") private String endDate;
-        @JsonProperty("quotes")
         private Map<String, Map<String, Double>> quotes;
 }

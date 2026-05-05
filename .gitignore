@@ -37,7 +37,6 @@ user_settings.json
 application_logs.json
 
 ### Node.js / React (Vite) ###
-stin-frontend/node/
 node_modules/
 .npm/
 

@@ -22,8 +22,6 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package
-        env:
-          EXCHANGE_API_KEY: ${{ secrets.EXCHANGE_API_KEY }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
