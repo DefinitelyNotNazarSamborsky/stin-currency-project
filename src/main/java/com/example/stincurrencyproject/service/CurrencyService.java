@@ -8,17 +8,15 @@ import java.util.Map;
 public class CurrencyService {
 
     public String findStrongestCurrency(Map<String, Double> quotes) {
-        if (quotes == null || quotes.isEmpty()) {
-            return null;
-        }
-        return Collections.max(quotes.entrySet(), Map.Entry.comparingByValue()).getKey();
+        if (quotes == null || quotes.isEmpty()) return null;
+        String key = Collections.max(quotes.entrySet(), Map.Entry.comparingByValue()).getKey();
+        return key.length() > 3 ? key.substring(3) : key;
     }
 
     public String findWeakestCurrency(Map<String, Double> quotes) {
-        if (quotes == null || quotes.isEmpty()) {
-            return null;
-        }
-        return Collections.min(quotes.entrySet(), Map.Entry.comparingByValue()).getKey();
+        if (quotes == null || quotes.isEmpty()) return null;
+        String key = Collections.min(quotes.entrySet(), Map.Entry.comparingByValue()).getKey();
+        return key.length() > 3 ? key.substring(3) : key;
     }
 
     public Double calculateAverageRate(Map<String, Map<String, Double>> historicRates, String targetCurrency) {
