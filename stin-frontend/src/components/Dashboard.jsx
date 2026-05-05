@@ -19,25 +19,87 @@ export default function Dashboard() {
     const [isFetching, setIsFetching] = useState(false);
     const [extremesData, setExtremesData] = useState(null);
     const [averagesData, setAveragesData] = useState(null);
-    const [historyData, setHistoryData] = useState(null);
     const [chartData, setChartData] = useState([]);
+
+    const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
+
     const COLORS = ['#e11d48', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#06b6d4'];
 
     useEffect(() => {
-        fetch("/api/me", { credentials: "include" })
+        if (error) {
+            const timer = setTimeout(() => {
+                setError(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        fetch("/api/me", {
+            headers: {
+                'Authorization': token
+            },
+            credentials: "include"
+        })
             .then(res => {
                 if (res.status === 401) navigate("/login");
             });
     }, []);
 
     useEffect(() => {
-        currencyService.getAvailableSymbols().then(setAvailableCurrencies);
+        const loadInitialData = async () => {
+            try {
+                const symbols = await currencyService.getAvailableSymbols();
+                setAvailableCurrencies(symbols);
+
+                const settings = await currencyService.getSettings();
+
+                if (settings && settings.baseCurrency !== null && settings.baseCurrency !== undefined) {
+                    setBaseCurrency(settings.baseCurrency);
+                    if (Array.isArray(settings.selectedCurrencies)) {
+                        setSelectedCurrencies(settings.selectedCurrencies);
+                    }
+                    setIsSettingsLoaded(true);
+                } else {
+                    setIsSettingsLoaded(true);
+                }
+            } catch (err) {
+                console.error("Inicializace selhala:", err);
+            }
+        };
+        loadInitialData();
     }, []);
+
+    useEffect(() => {
+        if (isSettingsLoaded) {
+            currencyService.saveSettings({
+                baseCurrency: baseCurrency,
+                selectedCurrencies: selectedCurrencies
+            }).catch(err => console.error("Nepodařilo se uložit nastavení na server:", err));
+        }
+    }, [baseCurrency, selectedCurrencies, isSettingsLoaded]);
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
         navigate('/login');
     };
+
+    const handleResetSettings = () => {
+        setBaseCurrency('USD');
+        setSelectedCurrencies(['CZK', 'EUR']);
+    };
+    //const handleResetSettings = () => {
+    //    setBaseCurrency('USD');
+    //    setSelectedCurrencies(['CZK', 'EUR']);
+    //    setError(t('api.errorDashboard') || 'Testovací chybová hláška API!');
+    //};
 
     const handleFetchData = async () => {
         if (selectedCurrencies.length === 0) {
@@ -47,24 +109,21 @@ export default function Dashboard() {
         setIsFetching(true);
         setError(null);
 
-        // 1. Načtení extrémů (Strongest/Weakest)
         try {
             const extremes = await currencyService.getExtremes(baseCurrency, selectedCurrencies);
             setExtremesData(extremes);
         } catch (err) {
-            setError(t('api.errorDashboard'));
+            setError(t('api.errorDashboard') || 'Nepodařilo se načíst data z API. Zkuste to prosím znovu.');
         }
-
         try {
             const chart = await currencyService.getHistoryChart(baseCurrency, selectedCurrencies, startDate, endDate);
             setChartData(chart);
 
             const calculatedAverages = {};
             selectedCurrencies.forEach(currency => {
-                // OPRAVA: Převedeme hodnotu natvrdo na číslo (parseFloat)
                 const values = chart
                     .map(day => parseFloat(day[currency]))
-                    .filter(val => !isNaN(val)); // Vezmeme jen to, z čeho opravdu vzniklo číslo
+                    .filter(val => !isNaN(val));
 
                 if (values.length > 0) {
                     const sum = values.reduce((acc, val) => acc + val, 0);
@@ -72,7 +131,6 @@ export default function Dashboard() {
                 }
             });
 
-            console.log("Spočítané průměry k vykreslení:", calculatedAverages); // <-- Tady teď uvidíš výsledek!
             setAveragesData(calculatedAverages);
         } catch (err) {
             console.error('Chart and average error:', err);
@@ -101,7 +159,12 @@ export default function Dashboard() {
 
             <div className="flex flex-1 overflow-hidden">
                 <aside className="w-80 bg-zinc-900/50 border-r border-zinc-800 p-6 flex flex-col gap-6 overflow-y-auto">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">{t('dashboard.settingsTitle')}</h3>
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">{t('dashboard.settingsTitle') || 'Nastavení'}</h3>
+                        <button onClick={handleResetSettings} className="text-xs text-zinc-400 hover:text-rose-400 transition-colors">
+                            {t('dashboard.reset') || 'Reset'}
+                        </button>
+                    </div>
 
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-semibold text-zinc-400">{t('dashboard.baseCurrency')}</label>
@@ -151,7 +214,22 @@ export default function Dashboard() {
                 </aside>
 
                 <main className="flex-1 p-8 overflow-y-auto">
-                    {error && <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500 text-rose-500 rounded-lg text-sm">{error}</div>}
+                    {error && (
+                        <div className="fixed bottom-6 right-6 z-50 bg-rose-600 border border-rose-500 text-white px-6 py-4 rounded-xl shadow-[0_0_20px_rgba(225,29,72,0.4)] flex items-center gap-4 animate-bounce">
+                            <svg className="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-semibold text-sm max-w-sm">{error}</span>
+                            <button
+                                onClick={() => setError(null)}
+                                className="ml-2 text-rose-200 hover:text-white transition-colors focus:outline-none"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
 
                     {extremesData ? (
                         <div className="flex flex-col gap-8 h-full">
@@ -175,8 +253,8 @@ export default function Dashboard() {
                                             <div key={currency} className="flex flex-col gap-1 bg-zinc-950 rounded-xl p-4 border border-zinc-800">
                                                 <span className="text-xs font-semibold text-zinc-500 uppercase">{currency}</span>
                                                 <span className="text-2xl font-black text-emerald-400">
-                                    {typeof avg === 'number' ? avg.toFixed(4) : '-'}
-                                    </span>
+                                                    {typeof avg === 'number' ? avg.toFixed(4) : '-'}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
