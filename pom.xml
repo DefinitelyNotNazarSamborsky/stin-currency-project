@@ -13,22 +13,11 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>stin-currency-project</name>
     <description>stin-currency-project</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+
     <properties>
         <java.version>21</java.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -150,14 +139,17 @@
                     <execution>
                         <id>install-node-and-npm</id>
                         <goals><goal>install-node-and-npm</goal></goals>
+                        <phase>process-resources</phase>
                     </execution>
                     <execution>
                         <id>npm-install</id>
                         <goals><goal>npm</goal></goals>
+                        <phase>process-resources</phase>
                     </execution>
                     <execution>
                         <id>npm-build</id>
                         <goals><goal>npm</goal></goals>
+                        <phase>process-resources</phase>
                         <configuration>
                             <arguments>run build</arguments>
                         </configuration>
@@ -167,16 +159,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>copy-frontend</id>
-                        <phase>generate-resources</phase>
+                        <phase>prepare-package</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <configuration>
                             <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>stin-frontend/dist</directory>
+                                    <filtering>false</filtering>
                                 </resource>
                             </resources>
                         </configuration>
