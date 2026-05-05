@@ -23,4 +23,18 @@ class MockExchangeRateClientTest {
         assertNotNull(result, "Odpověď nesmí být null");
         assertTrue(result.contains("\"timeframe\": true"), "JSON by měl obsahovat timeframe flag");
     }
+
+    @Test
+    void readMockFile_WhenFileIsMissing_ThrowsRuntimeException() throws Exception {
+        java.lang.reflect.Method method = MockExchangeRateClient.class.getDeclaredMethod("readMockFile", String.class);
+        method.setAccessible(true);
+
+        java.lang.reflect.InvocationTargetException exception = assertThrows(
+                java.lang.reflect.InvocationTargetException.class,
+                () -> method.invoke(client, "neexistujici_soubor.json")
+        );
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof RuntimeException);
+        assertTrue(cause.getMessage().contains("Chyba při načítání mock souboru: neexistujici_soubor.json"));
+    }
 }

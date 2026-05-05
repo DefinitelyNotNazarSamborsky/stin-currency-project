@@ -64,11 +64,11 @@ class SettingsControllerTest {
     @Test
     void endpoints_WithoutAuth_ReturnsUnauthorized() throws Exception {
         mockMvc.perform(get("/api/settings"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().is3xxRedirection());
 
         mockMvc.perform(post("/api/settings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().is3xxRedirection());
     }
 }

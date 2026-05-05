@@ -18,6 +18,7 @@ export default function Dashboard() {
     const [error, setError] = useState(null);
     const [isFetching, setIsFetching] = useState(false);
     const [extremesData, setExtremesData] = useState(null);
+    const [averagesData, setAveragesData] = useState(null);
     const [historyData, setHistoryData] = useState(null);
     const [chartData, setChartData] = useState([]);
     const COLORS = ['#e11d48', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#06b6d4'];
@@ -46,6 +47,7 @@ export default function Dashboard() {
         setIsFetching(true);
         setError(null);
 
+        // 1. Načtení extrémů (Strongest/Weakest)
         try {
             const extremes = await currencyService.getExtremes(baseCurrency, selectedCurrencies);
             setExtremesData(extremes);
@@ -54,17 +56,26 @@ export default function Dashboard() {
         }
 
         try {
-            const history = await currencyService.getHistory(baseCurrency, selectedCurrencies, startDate, endDate);
-            setHistoryData(history);
-        } catch (err) {
-            console.error('History error:', err);
-        }
-
-        try {
             const chart = await currencyService.getHistoryChart(baseCurrency, selectedCurrencies, startDate, endDate);
             setChartData(chart);
+
+            const calculatedAverages = {};
+            selectedCurrencies.forEach(currency => {
+                // OPRAVA: Převedeme hodnotu natvrdo na číslo (parseFloat)
+                const values = chart
+                    .map(day => parseFloat(day[currency]))
+                    .filter(val => !isNaN(val)); // Vezmeme jen to, z čeho opravdu vzniklo číslo
+
+                if (values.length > 0) {
+                    const sum = values.reduce((acc, val) => acc + val, 0);
+                    calculatedAverages[currency] = sum / values.length;
+                }
+            });
+
+            console.log("Spočítané průměry k vykreslení:", calculatedAverages); // <-- Tady teď uvidíš výsledek!
+            setAveragesData(calculatedAverages);
         } catch (err) {
-            console.error('Chart error:', err);
+            console.error('Chart and average error:', err);
         }
 
         setIsFetching(false);
@@ -139,7 +150,6 @@ export default function Dashboard() {
                     </button>
                 </aside>
 
-                {/* Dashboard Results */}
                 <main className="flex-1 p-8 overflow-y-auto">
                     {error && <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500 text-rose-500 rounded-lg text-sm">{error}</div>}
 
@@ -155,7 +165,23 @@ export default function Dashboard() {
                                     <div className="text-4xl font-black text-blue-500">{extremesData.weakestCurrency || '-'}</div>
                                 </div>
                             </div>
-
+                            {averagesData && Object.keys(averagesData).length > 0 && (
+                                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl">
+                                    <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">
+                                        {t('results.average')}
+                                    </h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        {Object.entries(averagesData).map(([currency, avg]) => (
+                                            <div key={currency} className="flex flex-col gap-1 bg-zinc-950 rounded-xl p-4 border border-zinc-800">
+                                                <span className="text-xs font-semibold text-zinc-500 uppercase">{currency}</span>
+                                                <span className="text-2xl font-black text-emerald-400">
+                                    {typeof avg === 'number' ? avg.toFixed(4) : '-'}
+                                    </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl flex-1 min-h-[400px] flex flex-col">
                                 <h3 className="text-lg font-bold mb-6">{t('results.average')} ({t('results.chartTitle')})</h3>
                                 {chartData.length > 0 ? (
