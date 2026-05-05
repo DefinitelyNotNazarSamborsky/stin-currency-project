@@ -21,6 +21,14 @@ export default function Dashboard() {
     const [historyData, setHistoryData] = useState(null);
     const [chartData, setChartData] = useState([]);
     const COLORS = ['#e11d48', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#06b6d4'];
+
+    useEffect(() => {
+        fetch("/api/me", { credentials: "include" })
+            .then(res => {
+                if (res.status === 401) navigate("/login");
+            });
+    }, []);
+
     useEffect(() => {
         currencyService.getAvailableSymbols().then(setAvailableCurrencies);
     }, []);
