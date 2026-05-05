@@ -27,6 +27,7 @@ export default function Login() {
                     'Authorization': `Basic ${encodedToken}`
                 }
             });
+
             localStorage.setItem('authToken', encodedToken);
 
             setTimeout(() => {

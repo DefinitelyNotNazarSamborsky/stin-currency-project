@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 
-// Ochranná komponenta
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem('authToken');
     if (!token) return <Navigate to="/login" replace />;
@@ -22,6 +21,7 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
+                
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
         </BrowserRouter>

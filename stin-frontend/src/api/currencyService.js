@@ -37,5 +37,21 @@ export const currencyService = {
             await delay(1200);
         }
         return { averages };
+    },
+
+    getHistoryChart: async (base, symbols, startDate, endDate) => {
+        console.log('Calling getHistoryChart...');
+        const symStr = symbols.join(',');
+        try {
+            const res = await apiClient.get(
+                `/api/currencies/history?base=${base}&symbols=${symStr}&startDate=${startDate}&endDate=${endDate}`,
+                { headers: getHeaders() }
+            );
+            console.log('Chart data:', res.data);
+            return res.data;
+        } catch (err) {
+            console.error('Chyba načítání historie', err);
+            return [];
+        }
     }
 };
