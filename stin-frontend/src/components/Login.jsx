@@ -28,7 +28,7 @@ export default function Login() {
                 }
             });
 
-            localStorage.setItem('authToken', encodedToken);
+            sessionStorage.setItem('authToken', encodedToken);
 
             setTimeout(() => {
                 navigate('/dashboard', { replace: true });

@@ -1,7 +1,7 @@
 import { apiClient } from './apiClient';
 
 const getHeaders = () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     return token ? { 'Authorization': `Basic ${token}` } : {};
 };
 
