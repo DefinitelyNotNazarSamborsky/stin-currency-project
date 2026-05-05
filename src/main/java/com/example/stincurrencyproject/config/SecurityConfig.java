@@ -10,7 +10,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -28,7 +27,17 @@ public class SecurityConfig {
                 )
                 .httpBasic(basic -> basic
                         .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendRedirect("/login");
+                            String requestedWith = request.getHeader("X-Requested-With");
+                            String acceptHeader = request.getHeader("Accept");
+
+                            if ("XMLHttpRequest".equals(requestedWith) ||
+                                    (acceptHeader != null && acceptHeader.contains("application/json"))) {
+                                response.setStatus(401);
+                                response.setContentType("application/json");
+                                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            } else {
+                                response.sendRedirect("/login");
+                            }
                         })
                 );
 

@@ -63,4 +63,49 @@ class CurrencyServiceTest {
         assertNull(currencyService.findWeakestCurrency(null));
         assertNull(currencyService.calculateAverageRate(null, "USDGBP"));
     }
+    @Test
+    void findStrongestCurrency_ShortKeyLength_ReturnsOriginalKey() {
+        Map<String, Double> quotes = Map.of(
+                "GBP", 0.77,
+                "CZK", 23.5 // Nejsilnější
+        );
+        assertEquals("CZK", currencyService.findStrongestCurrency(quotes));
+    }
+    @Test
+    void findWeakestCurrency_ShortKeyLength_ReturnsOriginalKey() {
+        Map<String, Double> quotes = Map.of(
+                "GBP", 0.77, // Nejslabší
+                "CZK", 23.5
+        );
+        assertEquals("GBP", currencyService.findWeakestCurrency(quotes));
+    }
+    @Test
+    void findWeakestCurrency_EmptyMap_ReturnsNull() {
+        assertNull(currencyService.findWeakestCurrency(new HashMap<>()));
+    }
+    @Test
+    void calculateAverageRate_TargetCurrencyNotFound_ReturnsNull() {
+        Map<String, Map<String, Double>> historicRates = new HashMap<>();
+        historicRates.put("2020-01-01", Map.of("USDCZK", 23.0));
+
+        assertNull(currencyService.calculateAverageRate(historicRates, "USDGBP"));
+    }
+    @Test
+    void calculateAverageRate_NullDailyRates_AreSafelyIgnored() {
+        Map<String, Map<String, Double>> historicRates = new HashMap<>();
+        historicRates.put("2020-01-01", Map.of("USDCZK", 23.0));
+        historicRates.put("2020-01-02", null);
+
+        Double avgCzk = currencyService.calculateAverageRate(historicRates, "USDCZK");
+
+        assertEquals(23.0, avgCzk, 0.001);
+    }
+    @Test
+    void calculateAverageRate_EmptyMapOrNullTarget_ReturnsNull() {
+        assertNull(currencyService.calculateAverageRate(new HashMap<>(), "USDGBP"));
+
+        Map<String, Map<String, Double>> historicRates = new HashMap<>();
+        historicRates.put("2020-01-01", Map.of("USDCZK", 23.0));
+        assertNull(currencyService.calculateAverageRate(historicRates, null));
+    }
 }
