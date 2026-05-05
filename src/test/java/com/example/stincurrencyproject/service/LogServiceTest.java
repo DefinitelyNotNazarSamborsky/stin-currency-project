@@ -10,7 +10,14 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.mockito.Mockito;
+import java.io.IOException;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +33,7 @@ class LogServiceTest {
                 .findAndAddModules()
                 .build();
 
-        logService = new LogService(objectMapper);
+        logService = new LogService(objectMapper, ".");
         cleanUpFiles();
     }
 
@@ -80,5 +87,77 @@ class LogServiceTest {
         List<Logs> loadedLogs = logService.loadLogs();
         assertEquals(2, loadedLogs.size());
         assertEquals("Test error 1", loadedLogs.get(0).getMessage());
+    }
+    @Test
+    void saveUserSettings_WhenExceptionThrown_LogsError() {
+        // Arrange
+        ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
+        Mockito.doThrow(new RuntimeException("Simulovaná chyba zápisu"))
+                .when(mockMapper).writeValue(any(File.class), any(UserSettings.class));
+        LogService errorLogService = new LogService(mockMapper, ".");
+
+        UserSettings settings = new UserSettings();
+
+        // Act & Assert
+        assertDoesNotThrow(() -> errorLogService.saveUserSettings(settings),
+                "Metoda by měla výjimku zachytit a zalogovat, ne ji vyhodit dál.");
+    }
+
+    @Test
+    void loadUserSettings_WhenExceptionThrown_ReturnsEmptySettings() throws IOException {
+
+        ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
+        Mockito.when(mockMapper.readValue(any(File.class), eq(UserSettings.class)))
+                .thenThrow(new RuntimeException("Simulovaná chyba čtení"));
+        LogService errorLogService = new LogService(mockMapper, ".");
+
+        settingsFile.createNewFile();
+
+        UserSettings result = errorLogService.loadUserSettings();
+
+        assertNotNull(result);
+        assertNull(result.getBaseCurrency(), "Při chybě by mělo být vráceno prázdné nastavení.");
+    }
+
+    @Test
+    void saveLog_WhenExceptionThrown_LogsError() throws IOException {
+        ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
+        Mockito.when(mockMapper.readValue(any(File.class), any(tools.jackson.databind.JavaType.class)))
+                .thenReturn(new ArrayList<Logs>());
+
+        Mockito.doThrow(new RuntimeException("Simulovaná chyba zápisu logu"))
+                .when(mockMapper).writeValue(any(File.class), any(List.class));
+
+        LogService errorLogService = new LogService(mockMapper, ".");
+        logsFile.createNewFile();
+
+        // Act & Assert
+        assertDoesNotThrow(() -> errorLogService.saveLog(new Logs()),
+                "Metoda by měla výjimku zachytit a zalogovat, ne ji vyhodit dál.");
+    }
+
+    @Test
+    void loadLogs_WhenExceptionThrown_ReturnsEmptyList() throws IOException {
+        ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
+        Mockito.when(mockMapper.readValue(any(File.class), any(tools.jackson.databind.JavaType.class)))
+                .thenThrow(new RuntimeException("Simulovaná chyba čtení logů"));
+        LogService errorLogService = new LogService(mockMapper, ".");
+
+        logsFile.createNewFile();
+
+        List<Logs> result = errorLogService.loadLogs();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty(), "Při chybě by měl být vrácen prázdný list logů.");
+    }
+
+    @Test
+    void loadLogs_WhenFileMissing_ReturnsEmptyList() {
+        if (logsFile.exists()) logsFile.delete();
+
+        List<Logs> loadedLogs = logService.loadLogs();
+
+        assertNotNull(loadedLogs);
+        assertTrue(loadedLogs.isEmpty(), "Pokud soubor logů neexistuje, měl by se vrátit prázdný seznam.");
     }
 }

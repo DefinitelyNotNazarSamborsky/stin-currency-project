@@ -86,6 +86,106 @@ class CurrencyControllerTest {
         mockMvc.perform(get("/api/currencies/strongest")
                         .param("base", "USD")
                         .param("symbols", "CZK"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().is3xxRedirection());
     }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getStrongestCurrency_WhenApiThrows_Returns500() throws Exception {
+        when(exchangeRateClient.getCurrentRates(any(), any()))
+                .thenThrow(new RuntimeException("API nedostupné"));
+
+        mockMvc.perform(get("/api/currencies/strongest")
+                        .param("base", "USD")
+                        .param("symbols", "CZK"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getWeakestCurrency_WhenApiThrows_Returns500() throws Exception {
+        when(exchangeRateClient.getCurrentRates(any(), any()))
+                .thenThrow(new RuntimeException("API nedostupné"));
+
+        mockMvc.perform(get("/api/currencies/weakest")
+                        .param("base", "USD")
+                        .param("symbols", "CZK"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getAverageRate_WhenApiThrows_Returns500() throws Exception {
+        when(exchangeRateClient.getHistoricRates(any(), any(), any(), any()))
+                .thenThrow(new RuntimeException("API nedostupné"));
+
+        mockMvc.perform(get("/api/currencies/average")
+                        .param("base", "USD")
+                        .param("symbols", "CZK")
+                        .param("startDate", "2020-01-01")
+                        .param("endDate", "2020-01-03")
+                        .param("targetCurrency", "CZK"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getHistoryData_WithAuth_ReturnsOk() throws Exception {
+        String mockJson = "{\"success\":true,\"timeframe\":true,\"source\":\"USD\",\"start_date\":\"2020-01-01\",\"end_date\":\"2020-01-03\",\"quotes\":{\"2020-01-01\":{\"USDCZK\":24.0}}}";
+        when(exchangeRateClient.getHistoricRates(any(), any(), any(), any())).thenReturn(mockJson);
+
+        mockMvc.perform(get("/api/currencies/history")
+                        .param("base", "USD")
+                        .param("symbols", "CZK")
+                        .param("startDate", "2020-01-01")
+                        .param("endDate", "2020-01-03"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getHistoryData_WhenApiThrows_Returns500() throws Exception {
+        when(exchangeRateClient.getHistoricRates(any(), any(), any(), any()))
+                .thenThrow(new RuntimeException("chyba"));
+
+        mockMvc.perform(get("/api/currencies/history")
+                        .param("base", "USD")
+                        .param("symbols", "CZK")
+                        .param("startDate", "2020-01-01")
+                        .param("endDate", "2020-01-03"))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getHistoryData_WithMultipleCurrencies_ReturnsOk() throws Exception {
+        String mockJson = "{\"success\":true,\"timeframe\":true,\"source\":\"USD\",\"start_date\":\"2020-01-01\",\"end_date\":\"2020-01-01\",\"quotes\":{\"2020-01-01\":{\"USDCZK\":24.0, \"USDGBP\":0.77}}}";
+        when(exchangeRateClient.getHistoricRates(any(), any(), any(), any())).thenReturn(mockJson);
+
+        mockMvc.perform(get("/api/currencies/history")
+                        .param("base", "USD")
+                        .param("symbols", "CZK,GBP")
+                        .param("startDate", "2020-01-01")
+                        .param("endDate", "2020-01-01"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].date").value("2020-01-01"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].CZK").value(24.0))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].GBP").value(0.77));
+    }
+
+    @Test
+    @WithMockUser(username = "uzivatel")
+    void getHistoryData_WithEmptyQuotes_ReturnsEmptyArray() throws Exception {
+        String mockJson = "{\"success\":true,\"timeframe\":true,\"source\":\"USD\",\"start_date\":\"2020-01-01\",\"end_date\":\"2020-01-03\",\"quotes\":{}}";
+        when(exchangeRateClient.getHistoricRates(any(), any(), any(), any())).thenReturn(mockJson);
+
+        mockMvc.perform(get("/api/currencies/history")
+                        .param("base", "USD")
+                        .param("symbols", "CZK")
+                        .param("startDate", "2020-01-01")
+                        .param("endDate", "2020-01-03"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
+    }
+
 }

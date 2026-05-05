@@ -5,6 +5,7 @@ import com.example.stincurrencyproject.model.UserSettings;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,26 +16,26 @@ import java.util.List;
 public class LogService {
 
     private final ObjectMapper objectMapper;
-    private final String SETTINGS_FILE = "user_settings.json";
-    private final String LOGS_FILE = "application_logs.json";
+    private final String settingsFile;
+    private final String logsFile;
 
-    public LogService(ObjectMapper objectMapper) {
+    public LogService(ObjectMapper objectMapper,
+                      @Value("${app.storage.path:.}") String storagePath) {
         this.objectMapper = objectMapper;
+        this.settingsFile = storagePath + "/user_settings.json";
+        this.logsFile = storagePath + "/application_logs.json";
     }
-
 
     public void saveUserSettings(UserSettings settings) {
         try {
-            objectMapper.writeValue(new File(SETTINGS_FILE), settings);
-            log.info("Uživatelské nastavení bylo úspěšně uloženo.");
+            objectMapper.writeValue(new File(settingsFile), settings);
         } catch (RuntimeException e) {
             log.error("Nepodařilo se uložit nastavení: {}", e.getMessage());
         }
     }
 
-
     public UserSettings loadUserSettings() {
-        File file = new File(SETTINGS_FILE);
+        File file = new File(settingsFile);
         if (file.exists()) {
             try {
                 return objectMapper.readValue(file, UserSettings.class);
@@ -49,17 +50,18 @@ public class LogService {
         List<Logs> currentLogs = loadLogs();
         currentLogs.add(logEntry);
         try {
-            objectMapper.writeValue(new File(LOGS_FILE), currentLogs);
+            objectMapper.writeValue(new File(logsFile), currentLogs);
         } catch (RuntimeException e) {
             log.error("Nepodařilo se uložit log: {}", e.getMessage());
         }
     }
 
     public List<Logs> loadLogs() {
-        File file = new File(LOGS_FILE);
+        File file = new File(logsFile);
         if (file.exists()) {
             try {
-                return objectMapper.readValue(file, objectMapper.getTypeFactory().constructCollectionType(List.class, Logs.class));
+                return objectMapper.readValue(file,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, Logs.class));
             } catch (RuntimeException e) {
                 log.error("Nepodařilo se načíst logy: {}", e.getMessage());
             }
