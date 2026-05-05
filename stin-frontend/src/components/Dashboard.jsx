@@ -87,8 +87,8 @@ export default function Dashboard() {
     }, [baseCurrency, selectedCurrencies, isSettingsLoaded]);
 
     const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        navigate('/login');
+        sessionStorage.removeItem('authToken');
+        window.location.href = '/login';
     };
 
     const handleResetSettings = () => {
