@@ -62,10 +62,14 @@ class LogServiceTest {
     }
 
     @Test
-    void loadUserSettings_WhenFileMissing_ReturnsEmptySettings() {
-        UserSettings loadedSettings = logService.loadUserSettings();
-        assertNotNull(loadedSettings);
-        assertNull(loadedSettings.getBaseCurrency(), "Pokud soubor neexistuje, baseCurrency by měla být null.");
+    void loadUserSettings_WhenFileMissing_ReturnsDefaultSettings() {
+
+        UserSettings result = logService.loadUserSettings();
+
+        assertEquals("USD", result.getBaseCurrency(), "Pokud soubor neexistuje, baseCurrency by měla být USD.");
+        assertNotNull(result.getSelectedCurrencies());
+        assertTrue(result.getSelectedCurrencies().contains("CZK"));
+        assertTrue(result.getSelectedCurrencies().contains("EUR"));
     }
 
     @Test
@@ -104,19 +108,12 @@ class LogServiceTest {
     }
 
     @Test
-    void loadUserSettings_WhenExceptionThrown_ReturnsEmptySettings() throws IOException {
+    void loadUserSettings_WhenExceptionThrown_ReturnsDefaultSettings() throws Exception {
+        UserSettings result = logService.loadUserSettings();
 
-        ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
-        Mockito.when(mockMapper.readValue(any(File.class), eq(UserSettings.class)))
-                .thenThrow(new RuntimeException("Simulovaná chyba čtení"));
-        LogService errorLogService = new LogService(mockMapper, ".");
-
-        settingsFile.createNewFile();
-
-        UserSettings result = errorLogService.loadUserSettings();
-
-        assertNotNull(result);
-        assertNull(result.getBaseCurrency(), "Při chybě by mělo být vráceno prázdné nastavení.");
+        assertEquals("USD", result.getBaseCurrency(), "Při chybě by mělo být vráceno defaultní nastavení (USD).");
+        assertNotNull(result.getSelectedCurrencies());
+        assertEquals(2, result.getSelectedCurrencies().size(), "Při chybě by měly být vráceny 2 defaultní měny.");
     }
 
     @Test
