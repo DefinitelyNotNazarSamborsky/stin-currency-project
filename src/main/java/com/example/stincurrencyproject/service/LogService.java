@@ -27,10 +27,21 @@ public class LogService {
     }
 
     public void saveUserSettings(UserSettings settings) {
+        File file = new File(settingsFile);
+
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         try {
-            objectMapper.writeValue(new File(settingsFile), settings);
-        } catch (RuntimeException e) {
-            log.error("Nepodařilo se uložit nastavení: {}", e.getMessage());
+            if (settings != null && settings.getBaseCurrency() != null) {
+                objectMapper.writeValue(file, settings);
+            } else {
+                log.warn("Zápis nastavení byl zrušen - přijatá data jsou prázdná (null).");
+            }
+        } catch (Exception e) {
+            log.error("Chyba při zápisu do souboru user_settings.json: {}", e.getMessage());
         }
     }
 
@@ -39,19 +50,30 @@ public class LogService {
         if (file.exists()) {
             try {
                 return objectMapper.readValue(file, UserSettings.class);
-            } catch (RuntimeException e) {
-                log.error("Nepodařilo se načíst nastavení: {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("Nepodařilo se načíst nastavení, vracím výchozí: {}", e.getMessage());
             }
         }
-        return new UserSettings();
+
+        UserSettings defaultSettings = new UserSettings();
+        defaultSettings.setBaseCurrency("USD");
+        defaultSettings.setSelectedCurrencies(List.of("CZK", "EUR"));
+        return defaultSettings;
     }
 
     public void saveLog(Logs logEntry) {
+        File file = new File(logsFile);
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         List<Logs> currentLogs = loadLogs();
         currentLogs.add(logEntry);
         try {
-            objectMapper.writeValue(new File(logsFile), currentLogs);
-        } catch (RuntimeException e) {
+            objectMapper.writeValue(file, currentLogs);
+            log.info("Chyba byla zapsána do logu.");
+        } catch (Exception e) {
             log.error("Nepodařilo se uložit log: {}", e.getMessage());
         }
     }

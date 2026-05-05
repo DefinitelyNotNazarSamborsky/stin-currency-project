@@ -10,44 +10,41 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export const currencyService = {
     getAvailableSymbols: async () => ['USD', 'CZK', 'EUR', 'GBP', 'CHF', 'PLN', 'JPY', 'AUD', 'CAD'],
 
+    getSettings: async () => {
+        try {
+            const res = await apiClient.get('/api/settings', { headers: getHeaders() });
+            return res.data || {};
+        } catch (err) {
+            if (err.response && err.response.status === 401) {
+                window.location.href = '/login';
+            }
+            return {};
+        }
+    },
+
+    saveSettings: async (settings) => {
+        try {
+            await apiClient.post('/api/settings', settings, { headers: getHeaders() });
+        } catch (err) {
+            console.error('Chyba ukládání nastavení:', err);
+        }
+    },
+
     getExtremes: async (base, symbols) => {
         const symStr = symbols.join(',');
         const strongRes = await apiClient.get(`/api/currencies/strongest?base=${base}&symbols=${symStr}`, { headers: getHeaders() });
         await delay(1200);
         const weakRes = await apiClient.get(`/api/currencies/weakest?base=${base}&symbols=${symStr}`, { headers: getHeaders() });
-
-        return {
-            strongestCurrency: strongRes.data,
-            weakestCurrency: weakRes.data
-        };
-    },
-
-    getHistory: async (base, symbols, startDate, endDate) => {
-        const averages = {};
-        for (const sym of symbols) {
-            try {
-                const res = await apiClient.get(
-                    `/api/currencies/average?base=${base}&symbols=${symbols.join(',')}&startDate=${startDate}&endDate=${endDate}&targetCurrency=${sym}`,
-                    { headers: getHeaders() }
-                );
-                if (res.data) averages[sym] = res.data;
-            } catch (err) {
-                console.error(`Chyba pro měnu ${sym}`, err);
-            }
-            await delay(1200);
-        }
-        return { averages };
+        return { strongestCurrency: strongRes.data, weakestCurrency: weakRes.data };
     },
 
     getHistoryChart: async (base, symbols, startDate, endDate) => {
-        console.log('Calling getHistoryChart...');
         const symStr = symbols.join(',');
         try {
             const res = await apiClient.get(
                 `/api/currencies/history?base=${base}&symbols=${symStr}&startDate=${startDate}&endDate=${endDate}`,
                 { headers: getHeaders() }
             );
-            console.log('Chart data:', res.data);
             return res.data;
         } catch (err) {
             console.error('Chyba načítání historie', err);
