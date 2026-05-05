@@ -16,10 +16,10 @@ class JsonParsingTest {
         String json = mockClient.getCurrentRates("USD", "GBP");
         CurrentRateResponse response = objectMapper.readValue(json, CurrentRateResponse.class);
 
-        assertTrue(response.getSuccess());
-        assertEquals("USD", response.getSource());
-        assertNotNull(response.getQuotes());
-        assertEquals(0.7701, response.getQuotes().get("USDGBP"));
+        assertTrue(response.success());
+        assertEquals("USD", response.source());
+        assertNotNull(response.quotes());
+        assertEquals(0.7701, response.quotes().get("USDGBP"));
     }
 
     @Test

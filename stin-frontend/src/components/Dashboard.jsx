@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { currencyService } from '../api/currencyService';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
@@ -19,7 +19,8 @@ export default function Dashboard() {
     const [isFetching, setIsFetching] = useState(false);
     const [extremesData, setExtremesData] = useState(null);
     const [historyData, setHistoryData] = useState(null);
-
+    const [chartData, setChartData] = useState([]);
+    const COLORS = ['#e11d48', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#06b6d4'];
     useEffect(() => {
         currencyService.getAvailableSymbols().then(setAvailableCurrencies);
     }, []);
@@ -40,19 +41,26 @@ export default function Dashboard() {
         try {
             const extremes = await currencyService.getExtremes(baseCurrency, selectedCurrencies);
             setExtremesData(extremes);
+        } catch (err) {
+            setError(t('api.errorDashboard'));
+        }
 
+        try {
             const history = await currencyService.getHistory(baseCurrency, selectedCurrencies, startDate, endDate);
             setHistoryData(history);
         } catch (err) {
-            setError(t('api.errorDashboard'));
-        } finally {
-            setIsFetching(false);
+            console.error('History error:', err);
         }
-    };
 
-    const chartData = historyData?.averages
-        ? Object.entries(historyData.averages).map(([name, value]) => ({ name, value }))
-        : [];
+        try {
+            const chart = await currencyService.getHistoryChart(baseCurrency, selectedCurrencies, startDate, endDate);
+            setChartData(chart);
+        } catch (err) {
+            console.error('Chart error:', err);
+        }
+
+        setIsFetching(false);
+    };
 
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
@@ -130,7 +138,6 @@ export default function Dashboard() {
                     {extremesData ? (
                         <div className="flex flex-col gap-8 h-full">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Kartička Nejsilnější */}
                                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl">
                                     <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-2">{t('results.strongest')}</h4>
                                     <div className="text-4xl font-black text-rose-500">{extremesData.strongestCurrency || '-'}</div>
@@ -145,16 +152,30 @@ export default function Dashboard() {
                                 <h3 className="text-lg font-bold mb-6">{t('results.average')} ({t('results.chartTitle')})</h3>
                                 {chartData.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#27272a" />
-                                            <XAxis dataKey="name" stroke="#a1a1aa" tick={{fill: '#a1a1aa'}} />
+                                            <XAxis
+                                                dataKey="date"
+                                                stroke="#a1a1aa"
+                                                tick={{fill: '#a1a1aa', fontSize: 11}}
+                                                tickFormatter={(val) => val.slice(5)}
+                                            />
                                             <YAxis stroke="#a1a1aa" tick={{fill: '#a1a1aa'}} domain={['auto', 'auto']} />
                                             <Tooltip
-                                                cursor={{fill: '#27272a'}}
                                                 contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px', color: '#fff' }}
                                             />
-                                            <Bar dataKey="value" fill="#e11d48" radius={[4, 4, 0, 0]} />
-                                        </BarChart>
+                                            <Legend />
+                                            {selectedCurrencies.map((sym, index) => (
+                                                <Line
+                                                    key={sym}
+                                                    type="monotone"
+                                                    dataKey={sym}
+                                                    stroke={COLORS[index % COLORS.length]}
+                                                    strokeWidth={2}
+                                                    dot={false}
+                                                />
+                                            ))}
+                                        </LineChart>
                                     </ResponsiveContainer>
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-zinc-600">{t('results.noDataAverages')}</div>
