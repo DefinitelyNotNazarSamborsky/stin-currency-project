@@ -23,9 +23,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/dashboard").authenticated()
                         .anyRequest().permitAll()
                 )
-                .httpBasic(withDefaults());
+                .httpBasic(basic -> basic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendRedirect("/login");
+                        })
+                );
 
         return http.build();
     }
