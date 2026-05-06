@@ -35,25 +35,6 @@ export default function Dashboard() {
     }, [error]);
 
     useEffect(() => {
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
-        fetch("/api/me", {
-            headers: {
-                'Authorization': token
-            },
-            credentials: "include"
-        })
-            .then(res => {
-                if (res.status === 401) navigate("/login");
-            });
-    }, []);
-
-    useEffect(() => {
         const loadInitialData = async () => {
             try {
                 const symbols = await currencyService.getAvailableSymbols();
